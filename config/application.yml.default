@@ -163,6 +163,7 @@ development:
   lexisnexis_request_mode: 'testing'
   lexisnexis_username: 'test_username'
   lockout_period_in_minutes: '10'
+  login_with_piv_cac: true
   logins_per_ip_limit: '5'
   logins_per_ip_period: '60'
   logins_per_ip_track_only_mode: 'false'
@@ -284,6 +285,7 @@ production:
   lexisnexis_request_mode: 'testing'
   lexisnexis_username: 'test_username'
   lockout_period_in_minutes: '10'
+  login_with_piv_cac: false
   logins_per_ip_limit: '5'
   logins_per_ip_period: '60'
   logins_per_ip_track_only_mode: 'true'
@@ -405,6 +407,7 @@ test:
   lexisnexis_request_mode: 'testing'
   lexisnexis_username: 'test_username'
   lockout_period_in_minutes: '5'
+  login_with_piv_cac: true
   logins_per_ip_limit: '3'
   logins_per_ip_period: '60'
   logins_per_ip_track_only_mode: 'false'
