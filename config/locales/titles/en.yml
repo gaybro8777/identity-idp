@@ -22,6 +22,8 @@ en:
     phone_setup:
       sms: Send your security code via text message
       voice: Send your security code via phone call
+    piv_cac_login:
+      new: Use your PIV/CAC to log in to your account
     piv_cac_setup:
       certificate:
         bad: PIV/CAC certificate error
