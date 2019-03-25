@@ -22,6 +22,8 @@ fr:
     phone_setup:
       sms: Envoyer votre code de sécurité par SMS
       voice: Envoyez votre code de sécurité par appel téléphonique
+    piv_cac_login:
+      new: Utilisez votre PIV / CAC pour vous connecter à votre compte
     piv_cac_setup:
       certificate:
         bad: Erreur de certificat PIV/CAC

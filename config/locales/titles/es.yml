@@ -22,6 +22,8 @@ es:
     phone_setup:
       sms: Envíe su código de seguridad a través de un mensaje de texto
       voice: Envíe su código de seguridad a través de una llamada telefónica
+    piv_cac_login:
+      new: Use su PIV / CAC para iniciar sesión en su cuenta
     piv_cac_setup:
       certificate:
         bad: Error de certificado PIV/CAC
