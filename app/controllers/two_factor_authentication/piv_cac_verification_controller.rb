@@ -7,6 +7,7 @@ module TwoFactorAuthentication
     before_action :reset_attempt_count_if_user_no_longer_locked_out, only: :show
 
     def show
+      analytics.track_event(Analytics::MULTI_FACTOR_AUTH_ENTER_PIV_CAC, analytics_properties)
       if params[:token]
         process_token
       else
@@ -18,7 +19,10 @@ module TwoFactorAuthentication
 
     def process_token
       result = piv_cac_verfication_form.submit
-      analytics.track_event(Analytics::MULTI_FACTOR_AUTH, result.to_h.merge(analytics_properties))
+      analytics.track_mfa_submit_event(
+        result.to_h.merge(analytics_properties),
+        params[:ga_client_id],
+      )
       if result.success?
         handle_valid_piv_cac
       else
@@ -43,7 +47,7 @@ module TwoFactorAuthentication
       if MfaPolicy.new(current_user).multiple_factors_enabled?
         after_otp_verification_confirmation_url
       else
-        account_recovery_setup_url
+        two_factor_options_url
       end
     end
 
@@ -64,8 +68,7 @@ module TwoFactorAuthentication
     def piv_cac_view_data
       {
         two_factor_authentication_method: two_factor_authentication_method,
-        user_email: current_user.email_addresses.first.email,
-        remember_device_available: false,
+        user_email: current_user.email_addresses.take.email,
       }.merge(generic_data)
     end
 

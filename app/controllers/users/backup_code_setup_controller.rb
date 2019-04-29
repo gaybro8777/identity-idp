@@ -1,7 +1,9 @@
 module Users
   class BackupCodeSetupController < ApplicationController
+    include MfaSetupConcern
+
     before_action :authenticate_user!
-    before_action :confirm_two_factor_authenticated, if: :two_factor_enabled?
+    before_action :confirm_user_authenticated_for_2fa_setup
     before_action :ensure_backup_codes_in_session, only: %i[create download]
 
     def index
@@ -10,12 +12,15 @@ module Users
       analytics.track_event(Analytics::BACKUP_CODE_SETUP_VISIT, result.to_h)
     end
 
+    def edit; end
+
     def create
       analytics.track_event(Analytics::BACKUP_CODE_CREATED)
       mark_user_as_fully_authenticated
       generator.save(user_session[:backup_codes])
       create_user_event(:backup_codes_added)
-      redirect_to sign_up_personal_key_url
+      revoke_remember_device
+      redirect_to two_2fa_setup
     end
 
     def download
@@ -41,8 +46,10 @@ module Users
       user_session[:authn_at] = Time.zone.now
     end
 
-    def two_factor_enabled?
-      MfaPolicy.new(current_user).two_factor_enabled?
+    def revoke_remember_device
+      UpdateUser.new(
+        user: current_user, attributes: { remember_device_revoked_at: Time.zone.now },
+      ).call
     end
 
     def generator

@@ -21,6 +21,10 @@ en:
       subtitle: Your backup codes
       title: Backup Codes
       warn: Download, print, or write down your personal security codes.
+    backup_code_regenerate:
+      caution: If you regenerate your backup codes you will receive a new set of backup
+        codes. Your original backup codes will no longer be valid.
+      confirm: Are you sure you want to regenerate your backup codes?
     buttons:
       back: Back
       cancel: Yes, cancel
@@ -102,6 +106,8 @@ en:
       try_again: Use another phone number
     two_factor_choice:
       legend: Select an option to secure your account
+    two_factor_recovery_choice:
+      legend: Select an additional method to secure your account
     verify_profile:
       instructions: Enter the ten-character code in the letter we sent you.
       name: Confirmation code

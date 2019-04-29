@@ -1,7 +1,10 @@
 module Users
   class WebauthnSetupController < ApplicationController
+    include RememberDeviceConcern
+    include MfaSetupConcern
+
     before_action :authenticate_user!
-    before_action :confirm_two_factor_authenticated, if: :two_factor_enabled?
+    before_action :confirm_user_authenticated_for_2fa_setup
 
     def new
       result = WebauthnVisitForm.new.submit(params)
@@ -52,8 +55,15 @@ module Users
     def handle_successful_delete
       create_user_event(:webauthn_key_removed)
       WebauthnConfiguration.where(user_id: current_user.id, id: params[:id]).destroy_all
+      revoke_remember_device
       flash[:success] = t('notices.webauthn_deleted')
       track_delete(true)
+    end
+
+    def revoke_remember_device
+      UpdateUser.new(
+        user: current_user, attributes: { remember_device_revoked_at: Time.zone.now },
+      ).call
     end
 
     def handle_failed_delete
@@ -75,21 +85,18 @@ module Users
       user_session[:webauthn_challenge] = credential_creation_options[:challenge].bytes.to_a
     end
 
-    def two_factor_enabled?
-      MfaPolicy.new(current_user).two_factor_enabled?
-    end
-
     def process_valid_webauthn
       create_user_event(:webauthn_key_added)
       mark_user_as_fully_authenticated
+      save_remember_device_preference
       redirect_to webauthn_setup_success_url
     end
 
     def url_after_successful_webauthn_setup
-      return account_url if user_already_has_a_personal_key?
+      return two_2fa_setup if user_already_has_a_personal_key?
 
       policy = PersonalKeyForNewUserPolicy.new(user: current_user, session: session)
-      return sign_up_personal_key_url if policy.show_personal_key_after_initial_2fa_setup?
+      return two_2fa_setup if policy.show_personal_key_after_initial_2fa_setup?
 
       idv_jurisdiction_url
     end

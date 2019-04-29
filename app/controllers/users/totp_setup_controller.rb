@@ -1,7 +1,10 @@
 module Users
   class TotpSetupController < ApplicationController
+    include RememberDeviceConcern
+    include MfaSetupConcern
+
     before_action :authenticate_user!
-    before_action :confirm_two_factor_authenticated, if: :two_factor_enabled?
+    before_action :confirm_user_authenticated_for_2fa_setup
 
     def new
       return redirect_to account_url if current_user.totp_enabled?
@@ -26,7 +29,7 @@ module Users
     end
 
     def disable
-      if current_user.totp_enabled? && MfaPolicy.new(current_user).multiple_factors_enabled?
+      if current_user.totp_enabled? && MfaPolicy.new(current_user).three_or_more_factors_enabled?
         process_successful_disable
       end
       redirect_to account_url
@@ -34,13 +37,9 @@ module Users
 
     private
 
-    def two_factor_enabled?
-      MfaPolicy.new(current_user).two_factor_enabled?
-    end
-
     def track_event
       properties = {
-        user_signed_up: MfaPolicy.new(current_user).two_factor_enabled?,
+        user_signed_up: multiple_factors_enabled?,
         totp_secret_present: new_totp_secret.present?,
       }
       analytics.track_event(Analytics::TOTP_SETUP_VISIT, properties)
@@ -53,6 +52,7 @@ module Users
     def process_valid_code
       create_user_event(:authenticator_enabled)
       mark_user_as_fully_authenticated
+      save_remember_device_preference
       flash[:success] = t('notices.totp_configured')
       redirect_to url_after_entering_valid_code
       user_session.delete(:new_totp_secret)
@@ -61,8 +61,15 @@ module Users
     def process_successful_disable
       analytics.track_event(Analytics::TOTP_USER_DISABLED)
       create_user_event(:authenticator_disabled)
-      UpdateUser.new(user: current_user, attributes: { otp_secret_key: nil }).call
+      revoke_remember_device
       flash[:success] = t('notices.totp_disabled')
+    end
+
+    def revoke_remember_device
+      UpdateUser.new(
+        user: current_user,
+        attributes: { otp_secret_key: nil, remember_device_revoked_at: Time.zone.now },
+      ).call
     end
 
     def mark_user_as_fully_authenticated
@@ -76,7 +83,7 @@ module Users
       policy = PersonalKeyForNewUserPolicy.new(user: current_user, session: session)
 
       if policy.show_personal_key_after_initial_2fa_setup?
-        sign_up_personal_key_url
+        two_2fa_setup
       else
         idv_jurisdiction_url
       end

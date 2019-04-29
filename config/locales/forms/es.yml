@@ -22,6 +22,12 @@ es:
       subtitle: Tus códigos de respaldo
       title: Códigos de respaldo
       warn: Descargue, imprima o escriba sus códigos de seguridad personales.
+    backup_code_regenerate:
+      caution: Si vuelve a generar sus códigos de respaldo, recibirá un nuevo conjunto
+        de códigos de respaldo. Sus códigos de copia de seguridad originales ya no
+        serán válidos.
+      confirm: "¿Está seguro de que desea volver a generar sus códigos de copia de
+        seguridad?"
     buttons:
       back: Atrás
       cancel: Sí, cancelar
@@ -104,6 +110,8 @@ es:
       try_again: Use otro número de teléfono.
     two_factor_choice:
       legend: Seleccione una opción para proteger su cuenta
+    two_factor_recovery_choice:
+      legend: Seleccione un método adicional para asegurar su cuenta
     verify_profile:
       instructions: Ingrese el código de 10 caracteres que le enviamos en la carta.
       name: Código de confirmación
